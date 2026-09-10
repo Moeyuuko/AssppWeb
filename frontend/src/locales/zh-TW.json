@@ -113,7 +113,9 @@
       "verify": "驗證",
       "cancel": "取消",
       "authFailed": "認證失敗",
-      "addSuccess": "帳號新增成功。"
+      "addSuccess": "帳號新增成功。",
+      "signingAssets": "正在準備安全登入元件：{{percent}}%",
+      "signingSetup": "正在準備安全登入，首次使用可能需要幾分鐘…"
     },
     "detail": {
       "title": "帳號詳情",

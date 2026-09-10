@@ -113,7 +113,9 @@
       "verify": "Verify",
       "cancel": "Cancel",
       "authFailed": "Authentication failed",
-      "addSuccess": "Account added successfully."
+      "addSuccess": "Account added successfully.",
+      "signingAssets": "Preparing secure sign-in components: {{percent}}%",
+      "signingSetup": "Preparing secure sign-in… The first attempt may take a few minutes."
     },
     "detail": {
       "title": "Account Details",

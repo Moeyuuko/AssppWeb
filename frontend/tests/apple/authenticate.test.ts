@@ -3,6 +3,9 @@ import { buildPlist } from "../../src/apple/plist";
 import { authenticate } from "../../src/apple/authenticate";
 import { appleRequest } from "../../src/apple/request";
 import { fetchBag } from "../../src/apple/bag";
+import { signAuthBody } from '../../src/apple/sap/client';
+
+vi.mock('../../src/apple/sap/client', () => ({ signAuthBody: vi.fn() }));
 
 vi.mock("../../src/apple/request", () => ({
   appleRequest: vi.fn(),
@@ -17,6 +20,29 @@ vi.mock("../../src/apple/bag", () => ({
 describe("apple/authenticate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('signs the exact body on redirects and includes the 2FA code', async () => {
+    const sap = { version: 200 as const, certificateURL: 'https://s.mzstatic.com/sap/setupCert.plist', setupURL: 'https://fpinit.itunes.apple.com/v1/signSapSetup/legacy' };
+    vi.mocked(fetchBag).mockResolvedValue({ authURL: 'https://buy.itunes.apple.com/authenticate', sap });
+    vi.mocked(signAuthBody).mockResolvedValueOnce('first-signature').mockResolvedValue('second-signature');
+    const success = { status: 200, statusText: 'OK', headers: {}, rawHeaders: [], body: buildPlist({ accountInfo: { address: {} }, passwordToken: 'token', dsPersonId: '123' }) };
+    vi.mocked(appleRequest).mockResolvedValueOnce({ ...success, status: 307, headers: { location: 'https://p25-buy.itunes.apple.com/authenticate' }, body: '' }).mockResolvedValue(success);
+    await authenticate('user@example.com', '密码<&', '123456', undefined, 'aabbccddeeff');
+    expect(signAuthBody).toHaveBeenCalledTimes(2);
+    for (let index = 0; index < 2; index++) {
+      const request = vi.mocked(appleRequest).mock.calls[index][0];
+      expect(vi.mocked(signAuthBody).mock.calls[index]).toEqual(['aabbccddeeff', sap, request.body]);
+      expect(request.body).toContain('密码&lt;&amp;123456');
+      expect(request.headers?.['X-Apple-ActionSignature']).toBe(index ? 'second-signature' : 'first-signature');
+    }
+  });
+
+  it('does not send credentials when signing fails', async () => {
+    vi.mocked(fetchBag).mockResolvedValue({ authURL: 'https://buy.itunes.apple.com/authenticate', sap: { version: 200, certificateURL: 'https://s.mzstatic.com/sap/setupCert.plist', setupURL: 'https://fpinit.itunes.apple.com/v1/signSapSetup/legacy' } });
+    vi.mocked(signAuthBody).mockRejectedValue(new Error('Signing failed'));
+    await expect(authenticate('user@example.com', 'secret', undefined, undefined, 'aabbccddeeff')).rejects.toThrow('Signing failed');
+    expect(appleRequest).not.toHaveBeenCalled();
   });
 
   it("sets guid query exactly once from bag endpoint", async () => {

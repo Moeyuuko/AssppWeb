@@ -12,3 +12,5 @@ icon.jpg
 references
 compose*.yml
 .DS_Store
+frontend/public/sap-engine
+frontend/public/sap-assets

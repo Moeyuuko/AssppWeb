@@ -87,6 +87,11 @@ describe("apple/bag", () => {
     expect(result.authURL).toBe(defaultAuthURL);
   });
 
+  it('does not downgrade malformed advertised SAP settings to unsigned login', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => buildPlist({ urlBag: { 'sign-sap-version': 201 } }) }));
+    await expect(fetchBag('aabbccddeeff')).rejects.toThrow('Unsupported Apple SAP');
+  });
+
   describe("normalizeAuthURL", () => {
     it("appends /fast/ to a bare native auth endpoint", () => {
       expect(

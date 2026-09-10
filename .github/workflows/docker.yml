@@ -10,7 +10,26 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Enforce readable SAP source inputs
+        run: node tools/sap-engine/check-source.mjs
+      - name: Backend checks
+        working-directory: backend
+        run: npm ci && npm test && npm run build
+      - name: Frontend checks
+        working-directory: frontend
+        run: npm ci && npm test && npm run build
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -1,14 +1,17 @@
-import { authHeaders } from "../api/client";
-import { parsePlist } from "./plist";
+import { authHeaders } from '../api/client';
+import { parsePlist } from './plist';
+import { sapEndpoints, SapConfigurationError } from './sap/protocol';
+import type { SapEndpoints } from './sap/protocol';
 
 export interface BagOutput {
   authURL: string;
+  sap?: SapEndpoints;
 }
 
 export const defaultAuthURL =
-  "https://auth.itunes.apple.com/auth/v1/native/fast/";
+  'https://auth.itunes.apple.com/auth/v1/native/fast/';
 
-const NATIVE_AUTH_HOST = "auth.itunes.apple.com";
+const NATIVE_AUTH_HOST = 'auth.itunes.apple.com';
 
 // The bag advertises the native auth endpoint without the /fast/ sub-path that
 // the login flow requires; the no-trailing-slash variant 301s to an HTML page.
@@ -23,9 +26,9 @@ export function normalizeAuthURL(rawURL: string): string {
   if (url.hostname !== NATIVE_AUTH_HOST) {
     return rawURL;
   }
-  let path = url.pathname.replace(/\/+$/, "");
-  if (!path.endsWith("/fast")) {
-    path += "/fast";
+  let path = url.pathname.replace(/\/+$/, '');
+  if (!path.endsWith('/fast')) {
+    path += '/fast';
   }
   url.pathname = `${path}/`;
   return url.toString();
@@ -53,19 +56,21 @@ export async function fetchBag(deviceId: string): Promise<BagOutput> {
     // authenticateAccount used to live inside the urlBag dict; newer bag
     // responses move it to the plist root, so prefer the root and fall back.
     const urlBag = dict.urlBag as Record<string, any> | undefined;
+    const sap = sapEndpoints({ ...urlBag, ...dict });
     const authURL =
       (dict.authenticateAccount as string | undefined) ??
       (urlBag?.authenticateAccount as string | undefined);
 
     if (!authURL) {
       console.warn(
-        "[Bag] authenticateAccount URL not found in bag, using default auth endpoint",
+        '[Bag] authenticateAccount URL not found in bag, using default auth endpoint',
       );
-      return { authURL: defaultAuthURL };
+      return { authURL: defaultAuthURL, sap };
     }
 
-    return { authURL: normalizeAuthURL(authURL) };
+    return { authURL: normalizeAuthURL(authURL), sap };
   } catch (error) {
+    if (error instanceof SapConfigurationError) throw error;
     console.warn(
       `[Bag] Failed to fetch/parse bag, using default auth endpoint: ${
         error instanceof Error ? error.message : String(error)

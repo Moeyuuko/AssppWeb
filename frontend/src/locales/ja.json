@@ -113,7 +113,9 @@
       "verify": "確認",
       "cancel": "キャンセル",
       "authFailed": "認証に失敗しました",
-      "addSuccess": "アカウントが正常に追加されました。"
+      "addSuccess": "アカウントが正常に追加されました。",
+      "signingAssets": "安全なサインインの準備中：{{percent}}%",
+      "signingSetup": "安全なサインインを準備しています。初回は数分かかる場合があります。"
     },
     "detail": {
       "title": "アカウントの詳細",

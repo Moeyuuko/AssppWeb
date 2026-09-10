@@ -113,7 +113,9 @@
       "verify": "验证",
       "cancel": "取消",
       "authFailed": "认证失败",
-      "addSuccess": "账号添加成功。"
+      "addSuccess": "账号添加成功。",
+      "signingAssets": "正在准备安全登录组件：{{percent}}%",
+      "signingSetup": "正在准备安全登录，首次使用可能需要几分钟…"
     },
     "detail": {
       "title": "账号详情",

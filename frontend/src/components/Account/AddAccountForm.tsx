@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PageContainer from "../Layout/PageContainer";
 import Spinner from "../common/Spinner";
+import SigningStatus from '../common/SigningStatus';
 import { useAccounts } from "../../hooks/useAccounts";
 import { useToastStore } from "../../store/toast";
 import { authenticate, AuthenticationError } from "../../apple/authenticate";
@@ -158,6 +159,7 @@ export default function AddAccountForm() {
             )}
           </section>
 
+          {loading && <SigningStatus />}
           <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
             <button
               type="submit"

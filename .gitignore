@@ -137,3 +137,7 @@ references/
 mnt/
 tunnel/
 deploy.sh
+
+# Generated locally or by Docker from audited source; never commit binaries.
+frontend/public/sap-engine/
+frontend/public/sap-assets/
